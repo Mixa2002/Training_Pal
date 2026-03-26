@@ -14,6 +14,17 @@
   -webkit-transform: translateZ(0);
 }
 
+.tabBar::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-bottom, 0px);
+  background: var(--bg-secondary);
+  z-index: 101;
+}
+
 .tab {
   display: flex;
   flex-direction: column;

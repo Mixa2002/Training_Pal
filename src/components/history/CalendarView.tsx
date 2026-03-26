@@ -77,17 +77,15 @@ export default function CalendarView({ sessions, onSelectDate }: CalendarViewPro
           return (
             <button
               key={dateStr}
-              className={`${styles.cell} ${styles.dayCell} ${isToday ? styles.today : ''}`}
+              className={`${styles.cell} ${styles.dayCell} ${isToday ? styles.today : ''} ${session ? (session.status === 'completed' ? styles.hasSession : styles.hasSkipped) : ''}`}
               onClick={() => session?.status === 'completed' && onSelectDate(session.id)}
               disabled={!session || session.status !== 'completed'}
             >
               <span className={styles.dayNum}>{day}</span>
               {session && (
-                <span
-                  className={`${styles.dot} ${
-                    session.status === 'completed' ? styles.dotGreen : styles.dotYellow
-                  }`}
-                />
+                <span className={styles.sessionName}>
+                  {session.templateName}
+                </span>
               )}
             </button>
           );

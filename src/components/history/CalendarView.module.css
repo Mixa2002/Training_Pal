@@ -52,11 +52,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 42px;
+  justify-content: flex-start;
+  padding-top: 6px;
+  height: 56px;
   border-radius: 8px;
   background: transparent;
   position: relative;
+  overflow: hidden;
 }
 
 .dayCell {
@@ -77,22 +79,29 @@
   background: var(--bg-tertiary);
 }
 
+.hasSession {
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.hasSkipped {
+  background: rgba(234, 179, 8, 0.1);
+}
+
 .dayNum {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1;
+  font-weight: 600;
 }
 
-.dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
+.sessionName {
+  font-size: 8px;
+  line-height: 1.1;
+  color: var(--accent);
+  text-align: center;
   margin-top: 3px;
-}
-
-.dotGreen {
-  background: var(--accent);
-}
-
-.dotYellow {
-  background: var(--accent-warning);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 2px;
 }

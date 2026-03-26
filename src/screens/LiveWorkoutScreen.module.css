@@ -1,0 +1,96 @@
+.page {
+  min-height: 100%;
+  padding: 16px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
+  background: var(--bg-primary);
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.exName {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.abandonBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.abandonBtn:active {
+  background: var(--bg-tertiary);
+  color: var(--accent-danger);
+}
+
+.exType {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  display: block;
+}
+
+.setsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.activeSet {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.predHint {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.setLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.inputRow {
+  display: flex;
+  gap: 12px;
+}
+
+.inputRow > * {
+  flex: 1;
+}
+
+.nextArea {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border);
+}

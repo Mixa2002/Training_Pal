@@ -1,0 +1,124 @@
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 500;
+  min-height: 36px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: capitalize;
+}
+
+.completed {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--accent);
+}
+
+.skipped {
+  background: rgba(234, 179, 8, 0.15);
+  color: var(--accent-warning);
+}
+
+.abandoned {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--accent-danger);
+}
+
+.exercises {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.exerciseCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.exHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.exName {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.exType {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.noSets {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.setsTable {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tableHeader, .tableRow {
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.tableHeader {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tableRow {
+  font-size: 14px;
+  color: var(--text-primary);
+  padding: 6px 0;
+}
+
+.tableRow:not(:last-child) {
+  border-bottom: 1px solid rgba(42, 42, 53, 0.3);
+}

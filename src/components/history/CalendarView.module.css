@@ -1,0 +1,98 @@
+.container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.navBtn:active {
+  background: var(--bg-tertiary);
+}
+
+.monthLabel {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.weekday {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  border-radius: 8px;
+  background: transparent;
+  position: relative;
+}
+
+.dayCell {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.dayCell:disabled {
+  opacity: 1;
+  color: var(--text-secondary);
+}
+
+.dayCell:not(:disabled):active {
+  background: var(--bg-tertiary);
+}
+
+.today {
+  background: var(--bg-tertiary);
+}
+
+.dayNum {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-top: 3px;
+}
+
+.dotGreen {
+  background: var(--accent);
+}
+
+.dotYellow {
+  background: var(--accent-warning);
+}

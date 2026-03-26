@@ -1,0 +1,109 @@
+.workoutCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.workoutName {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.workoutMeta {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.exercisePreview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.previewRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.previewNum {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.previewName {
+  flex: 1;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.previewDetail {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.lastSession {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.lastLabel {
+  font-weight: 500;
+}
+
+.lastDate {
+  color: var(--text-secondary);
+}
+
+.lastDuration {
+  margin-left: auto;
+  color: var(--text-secondary);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doneCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.checkIcon {
+  margin-bottom: 16px;
+}
+
+.doneTitle {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.doneNext {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.doneNext strong {
+  color: var(--text-primary);
+}

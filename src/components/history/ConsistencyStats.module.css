@@ -1,0 +1,36 @@
+.container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.value {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.completed {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.skipped {
+  color: var(--accent-warning);
+  font-weight: 600;
+}

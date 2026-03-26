@@ -279,13 +279,13 @@ export default function LiveWorkoutScreen() {
           <CompletedSetRow key={i} setNumber={i + 1} set={set} type={currentEx.type} />
         ))}
 
-        {/* Rest timer */}
+        {/* Rest timer — blocks next set/exercise until done */}
         {timer.isActive && (
           <RestTimerDisplay remaining={timer.remaining} onSkip={timer.cancel} />
         )}
 
-        {/* Active set input */}
-        {!allSetsDone && (
+        {/* Active set input — hidden while timer is running */}
+        {!allSetsDone && !timer.isActive && (
           <div className={styles.activeSet} ref={activeSetRef}>
             {/* Prediction hint */}
             {currentPred && currentPred.type === currentEx.type && currentPred.sets[currentSetNum - 1] && (
@@ -306,46 +306,48 @@ export default function LiveWorkoutScreen() {
 
             {currentEx.type === 'strength' ? (
               <>
-                <div className={styles.inputRow}>
-                  <NumberInput
-                    label="Weight (kg)"
-                    value={input.weight}
-                    onChange={(v) => setInput((p) => ({ ...p, weight: v }))}
-                    decimal
-                    placeholder="0"
-                  />
-                  <NumberInput
-                    label="Reps"
-                    value={input.reps}
-                    onChange={(v) => setInput((p) => ({ ...p, reps: v }))}
-                    placeholder="0"
-                  />
-                </div>
-                <div className={styles.weightControls}>
-                  <button
-                    className={styles.weightBtn}
-                    onClick={() => {
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Weight (kg)</label>
+                  <div className={styles.fieldRow}>
+                    <button className={styles.incBtn} onClick={() => {
                       const cur = parseFloat(input.weight) || 0;
                       setInput((p) => ({ ...p, weight: String(Math.max(0, +(cur - weightStep).toFixed(2))) }));
-                    }}
-                  >
-                    −{weightStep}
-                  </button>
-                  <button
-                    className={`${styles.stepToggle} ${weightStep === 1 ? styles.stepActive1 : styles.stepActive125}`}
-                    onClick={() => setWeightStep((s) => (s === 1 ? 1.25 : 1))}
-                  >
-                    {weightStep === 1 ? '1 kg' : '1.25 kg'}
-                  </button>
-                  <button
-                    className={styles.weightBtn}
-                    onClick={() => {
+                    }}>−</button>
+                    <NumberInput
+                      value={input.weight}
+                      onChange={(v) => setInput((p) => ({ ...p, weight: v }))}
+                      decimal
+                      placeholder="0"
+                    />
+                    <button className={styles.incBtn} onClick={() => {
                       const cur = parseFloat(input.weight) || 0;
                       setInput((p) => ({ ...p, weight: String(+(cur + weightStep).toFixed(2)) }));
-                    }}
-                  >
-                    +{weightStep}
-                  </button>
+                    }}>+</button>
+                    <button
+                      className={`${styles.stepToggle} ${weightStep === 1 ? styles.stepActive1 : styles.stepActive125}`}
+                      onClick={() => setWeightStep((s) => (s === 1 ? 1.25 : 1))}
+                    >
+                      {weightStep === 1 ? '1' : '1.25'}
+                    </button>
+                  </div>
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Reps</label>
+                  <div className={styles.fieldRow}>
+                    <button className={styles.incBtn} onClick={() => {
+                      const cur = parseInt(input.reps) || 0;
+                      setInput((p) => ({ ...p, reps: String(Math.max(0, cur - 1)) }));
+                    }}>−</button>
+                    <NumberInput
+                      value={input.reps}
+                      onChange={(v) => setInput((p) => ({ ...p, reps: v }))}
+                      placeholder="0"
+                    />
+                    <button className={styles.incBtn} onClick={() => {
+                      const cur = parseInt(input.reps) || 0;
+                      setInput((p) => ({ ...p, reps: String(cur + 1) }));
+                    }}>+</button>
+                  </div>
                 </div>
                 <RirSelector
                   value={input.rir}
@@ -378,13 +380,13 @@ export default function LiveWorkoutScreen() {
             )}
 
             <Button fullWidth onClick={saveSet} disabled={!canSave}>
-              Save Set
+              Finished
             </Button>
           </div>
         )}
 
-        {/* Pending sets */}
-        {!allSetsDone &&
+        {/* Pending sets — hidden while timer is running */}
+        {!allSetsDone && !timer.isActive &&
           Array.from({ length: totalSetsForEx - exCompletedSets.length - 1 }, (_, i) => {
             const futureSetNum = currentSetNum + 1 + i;
             return (
@@ -399,13 +401,8 @@ export default function LiveWorkoutScreen() {
       </div>
 
       {/* Next / Finish buttons */}
-      {allSetsDone && (
+      {allSetsDone && !timer.isActive && (
         <div className={styles.nextArea}>
-          {timer.isActive && (
-            <div style={{ marginBottom: 12 }}>
-              <RestTimerDisplay remaining={timer.remaining} onSkip={timer.cancel} />
-            </div>
-          )}
           {isLastExercise ? (
             <Button fullWidth onClick={finishWorkout}>
               Finish Workout

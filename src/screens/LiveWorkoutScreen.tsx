@@ -59,6 +59,7 @@ export default function LiveWorkoutScreen() {
   const [startedAt] = useState(Date.now());
   const [showAbandon, setShowAbandon] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [weightStep, setWeightStep] = useState<1 | 1.25>(1);
   const activeSetRef = useRef<HTMLDivElement>(null);
 
   const handleTimerComplete = useCallback(() => {
@@ -166,12 +167,17 @@ export default function LiveWorkoutScreen() {
     const nextSetNum = currentSetNum + 1;
     setCurrentSetNum(nextSetNum);
 
-    // Prefill next set
+    // Prefill next set or start rest timer after last set
     if (nextSetNum <= totalSetsForEx) {
       prefillSet(currentEx, nextSetNum - 1, predictions);
 
-      // Start rest timer
+      // Start rest timer between sets
       if (currentEx.restSeconds > 0) {
+        timer.start(currentEx.restSeconds);
+      }
+    } else {
+      // All sets done — start rest timer before next exercise
+      if (currentEx.restSeconds > 0 && !isLastExercise) {
         timer.start(currentEx.restSeconds);
       }
     }
@@ -315,6 +321,32 @@ export default function LiveWorkoutScreen() {
                     placeholder="0"
                   />
                 </div>
+                <div className={styles.weightControls}>
+                  <button
+                    className={styles.weightBtn}
+                    onClick={() => {
+                      const cur = parseFloat(input.weight) || 0;
+                      setInput((p) => ({ ...p, weight: String(Math.max(0, +(cur - weightStep).toFixed(2))) }));
+                    }}
+                  >
+                    −{weightStep}
+                  </button>
+                  <button
+                    className={`${styles.stepToggle} ${weightStep === 1 ? styles.stepActive1 : styles.stepActive125}`}
+                    onClick={() => setWeightStep((s) => (s === 1 ? 1.25 : 1))}
+                  >
+                    {weightStep === 1 ? '1 kg' : '1.25 kg'}
+                  </button>
+                  <button
+                    className={styles.weightBtn}
+                    onClick={() => {
+                      const cur = parseFloat(input.weight) || 0;
+                      setInput((p) => ({ ...p, weight: String(+(cur + weightStep).toFixed(2)) }));
+                    }}
+                  >
+                    +{weightStep}
+                  </button>
+                </div>
                 <RirSelector
                   value={input.rir}
                   onChange={(v) => setInput((p) => ({ ...p, rir: v }))}
@@ -369,6 +401,11 @@ export default function LiveWorkoutScreen() {
       {/* Next / Finish buttons */}
       {allSetsDone && (
         <div className={styles.nextArea}>
+          {timer.isActive && (
+            <div style={{ marginBottom: 12 }}>
+              <RestTimerDisplay remaining={timer.remaining} onSkip={timer.cancel} />
+            </div>
+          )}
           {isLastExercise ? (
             <Button fullWidth onClick={finishWorkout}>
               Finish Workout

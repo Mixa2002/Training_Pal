@@ -84,6 +84,49 @@
   flex: 1;
 }
 
+.weightControls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.weightBtn {
+  flex: 1;
+  height: 40px;
+  border-radius: var(--radius);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+}
+
+.weightBtn:active {
+  background: var(--accent-green);
+  color: #000;
+}
+
+.stepToggle {
+  min-width: 72px;
+  height: 40px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.stepActive1 {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.stepActive125 {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
 .nextArea {
   position: fixed;
   bottom: 0;

@@ -12,7 +12,7 @@ function createDefaultExercise(): StrengthExercise {
     id: generateId(),
     type: 'strength',
     name: '',
-    sets: 3,
+    sets: [{ weight: 0, reps: 0, rir: 2 }],
     restSeconds: 90,
   };
 }

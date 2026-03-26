@@ -111,7 +111,7 @@ export default function TodayScreen() {
                 <span className={styles.previewName}>{ex.name}</span>
                 <span className={styles.previewDetail}>
                   {ex.type === 'strength'
-                    ? `${ex.sets} set${ex.sets !== 1 ? 's' : ''}`
+                    ? `${ex.sets.length} set${ex.sets.length !== 1 ? 's' : ''}`
                     : `${ex.durationMinutes}min`}
                 </span>
               </div>

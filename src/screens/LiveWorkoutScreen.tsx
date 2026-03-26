@@ -10,6 +10,7 @@ import { useRestTimer } from '../hooks/useRestTimer';
 import { useSettings } from '../hooks/useSettings';
 import type {
   Exercise,
+  StrengthExercise,
   SessionExercise,
   SessionSet,
   StrengthSet,
@@ -71,6 +72,34 @@ export default function LiveWorkoutScreen() {
 
   const timer = useRestTimer(handleTimerComplete);
 
+  // Prefill logic: use last session data if available, otherwise fall back to template targets
+  function prefillSet(ex: Exercise, setIndex: number, preds: Map<string, SessionExercise>) {
+    const pred = preds.get(ex.id);
+    const predSet = pred?.type === ex.type ? pred.sets[setIndex] : null;
+
+    if (ex.type === 'strength') {
+      // Priority: last session > template target
+      if (predSet) {
+        const s = predSet as StrengthSet;
+        setInput({ ...emptyInput, weight: String(s.weight), reps: String(s.reps), rir: s.rir });
+      } else {
+        const target = (ex as StrengthExercise).sets[setIndex];
+        if (target) {
+          setInput({ ...emptyInput, weight: String(target.weight || ''), reps: String(target.reps || ''), rir: target.rir });
+        } else {
+          setInput({ ...emptyInput });
+        }
+      }
+    } else {
+      if (predSet) {
+        const c = predSet as CardioSet;
+        setInput({ ...emptyInput, incline: String(c.incline), speed: String(c.speed), durationMinutes: String(c.durationMinutes) });
+      } else {
+        setInput({ ...emptyInput });
+      }
+    }
+  }
+
   // Load template and predictions on mount
   useEffect(() => {
     async function load() {
@@ -93,12 +122,8 @@ export default function LiveWorkoutScreen() {
       const preds = await getLastSessionExercises(tId);
       setPredictions(preds);
 
-      // Prefill first set
-      const firstEx = template.exercises[0];
-      const firstPred = preds.get(firstEx.id);
-      if (firstPred && firstPred.sets.length > 0 && firstPred.type === firstEx.type) {
-        prefillFromPrediction(firstPred.sets[0], firstEx.type);
-      }
+      // Prefill first set of first exercise
+      prefillSet(template.exercises[0], 0, preds);
 
       initAudio();
       setLoaded(true);
@@ -107,29 +132,9 @@ export default function LiveWorkoutScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function prefillFromPrediction(predSet: SessionSet, type: 'strength' | 'cardio') {
-    if (type === 'strength') {
-      const s = predSet as StrengthSet;
-      setInput({
-        ...emptyInput,
-        weight: String(s.weight),
-        reps: String(s.reps),
-        rir: s.rir,
-      });
-    } else {
-      const c = predSet as CardioSet;
-      setInput({
-        ...emptyInput,
-        incline: String(c.incline),
-        speed: String(c.speed),
-        durationMinutes: String(c.durationMinutes),
-      });
-    }
-  }
-
   const currentEx = exercises[currentExIndex];
   const exCompletedSets = completedSets.get(currentEx?.id ?? '') ?? [];
-  const totalSetsForEx = currentEx?.type === 'strength' ? currentEx.sets : 1;
+  const totalSetsForEx = currentEx?.type === 'strength' ? currentEx.sets.length : 1;
   const allSetsDone = exCompletedSets.length >= totalSetsForEx;
   const isLastExercise = currentExIndex === exercises.length - 1;
   const currentPred = currentEx ? predictions.get(currentEx.id) : null;
@@ -161,22 +166,13 @@ export default function LiveWorkoutScreen() {
     const nextSetNum = currentSetNum + 1;
     setCurrentSetNum(nextSetNum);
 
-    // Prefill next set from prediction
-    const predSets = currentPred?.sets ?? [];
-    const nextPred = predSets[nextSetNum - 1]; // 0-indexed
-    if (nextPred && currentPred?.type === currentEx.type) {
-      prefillFromPrediction(nextPred, currentEx.type);
-    } else {
-      setInput({ ...emptyInput });
-    }
-
-    // Start rest timer if not last set
+    // Prefill next set
     if (nextSetNum <= totalSetsForEx) {
-      const restSecs = currentEx.type === 'strength'
-        ? currentEx.restSeconds
-        : currentEx.restSeconds;
-      if (restSecs > 0) {
-        timer.start(restSecs);
+      prefillSet(currentEx, nextSetNum - 1, predictions);
+
+      // Start rest timer
+      if (currentEx.restSeconds > 0) {
+        timer.start(currentEx.restSeconds);
       }
     }
 
@@ -191,14 +187,7 @@ export default function LiveWorkoutScreen() {
     const nextIdx = currentExIndex + 1;
     setCurrentExIndex(nextIdx);
     setCurrentSetNum(1);
-
-    const nextEx = exercises[nextIdx];
-    const pred = predictions.get(nextEx.id);
-    if (pred && pred.sets.length > 0 && pred.type === nextEx.type) {
-      prefillFromPrediction(pred.sets[0], nextEx.type);
-    } else {
-      setInput({ ...emptyInput });
-    }
+    prefillSet(exercises[nextIdx], 0, predictions);
   }
 
   async function finishWorkout() {
@@ -245,6 +234,19 @@ export default function LiveWorkoutScreen() {
     ? input.weight !== '' && input.reps !== '' && input.rir !== null
     : input.incline !== '' && input.speed !== '' && input.durationMinutes !== '';
 
+  // Build pending set hints from template targets or predictions
+  function getPendingHint(setIndex: number): SessionSet | null {
+    // Try last session first
+    const predSet = currentPred?.type === currentEx.type ? currentPred.sets[setIndex] : null;
+    if (predSet) return predSet;
+    // Fall back to template target for strength
+    if (currentEx.type === 'strength') {
+      const target = (currentEx as StrengthExercise).sets[setIndex];
+      if (target) return { setNumber: setIndex + 1, weight: target.weight, reps: target.reps, rir: target.rir };
+    }
+    return null;
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -260,7 +262,7 @@ export default function LiveWorkoutScreen() {
         </div>
         <span className={styles.exType}>
           {currentEx.type === 'strength'
-            ? `${totalSetsForEx} working set${totalSetsForEx !== 1 ? 's' : ''}${currentEx.repMin != null ? ` · ${currentEx.repMin}${currentEx.repMax ? `-${currentEx.repMax}` : ''} reps` : ''}`
+            ? `${totalSetsForEx} working set${totalSetsForEx !== 1 ? 's' : ''} · Rest ${currentEx.restSeconds}s`
             : 'Cardio'}
         </span>
       </div>
@@ -353,15 +355,11 @@ export default function LiveWorkoutScreen() {
         {!allSetsDone &&
           Array.from({ length: totalSetsForEx - exCompletedSets.length - 1 }, (_, i) => {
             const futureSetNum = currentSetNum + 1 + i;
-            const predSet =
-              currentPred?.type === currentEx.type
-                ? currentPred.sets[futureSetNum - 1]
-                : null;
             return (
               <PendingSetRow
                 key={futureSetNum}
                 setNumber={futureSetNum}
-                prediction={predSet}
+                prediction={getPendingHint(futureSetNum - 1)}
                 type={currentEx.type}
               />
             );

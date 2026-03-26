@@ -1,4 +1,4 @@
-import type { Exercise } from '../../db/types';
+import type { Exercise, StrengthExercise, StrengthSetTarget } from '../../db/types';
 import NumberInput from '../common/NumberInput';
 import styles from './ExerciseFormRow.module.css';
 
@@ -11,6 +11,8 @@ interface ExerciseFormRowProps {
   onMoveUp: () => void;
   onMoveDown: () => void;
 }
+
+const defaultSet: StrengthSetTarget = { weight: 0, reps: 0, rir: 2 };
 
 export default function ExerciseFormRow({
   exercise,
@@ -36,17 +38,38 @@ export default function ExerciseFormRow({
         incline: 0,
         speed: 0,
         durationMinutes: 30,
-        restSeconds: exercise.type === 'strength' ? exercise.restSeconds : 60,
+        restSeconds: exercise.restSeconds,
       });
     } else {
       onChange({
         id: exercise.id,
         type: 'strength',
         name: exercise.name,
-        sets: 3,
-        restSeconds: exercise.type === 'cardio' ? exercise.restSeconds : 90,
+        sets: [{ ...defaultSet }],
+        restSeconds: exercise.restSeconds,
       });
     }
+  }
+
+  // Strength set helpers
+  function updateSet(setIndex: number, patch: Partial<StrengthSetTarget>) {
+    if (exercise.type !== 'strength') return;
+    const newSets = exercise.sets.map((s, i) =>
+      i === setIndex ? { ...s, ...patch } : s
+    );
+    update({ sets: newSets });
+  }
+
+  function addSet() {
+    if (exercise.type !== 'strength') return;
+    const lastSet = exercise.sets[exercise.sets.length - 1] ?? defaultSet;
+    update({ sets: [...exercise.sets, { ...lastSet }] });
+  }
+
+  function removeSet(setIndex: number) {
+    if (exercise.type !== 'strength') return;
+    const newSets = exercise.sets.filter((_, i) => i !== setIndex);
+    update({ sets: newSets.length > 0 ? newSets : [{ ...defaultSet }] });
   }
 
   return (
@@ -100,33 +123,68 @@ export default function ExerciseFormRow({
       </div>
 
       {isStrength ? (
-        <div className={styles.fields}>
-          <NumberInput
-            label="Sets"
-            value={exercise.sets}
-            onChange={(v) => update({ sets: Math.max(1, parseInt(v) || 1) })}
-            min={1}
-            max={20}
-          />
-          <NumberInput
-            label="Rep Min"
-            value={exercise.repMin ?? ''}
-            onChange={(v) => update({ repMin: v === '' ? undefined : parseInt(v) || 0 })}
-            placeholder="-"
-          />
-          <NumberInput
-            label="Rep Max"
-            value={exercise.repMax ?? ''}
-            onChange={(v) => update({ repMax: v === '' ? undefined : parseInt(v) || 0 })}
-            placeholder="-"
-          />
-          <NumberInput
-            label="Rest (s)"
-            value={exercise.restSeconds}
-            onChange={(v) => update({ restSeconds: Math.max(0, parseInt(v) || 0) })}
-            min={0}
-          />
-        </div>
+        <>
+          <div className={styles.restRow}>
+            <NumberInput
+              label="Rest between sets (seconds)"
+              value={exercise.restSeconds}
+              onChange={(v) => update({ restSeconds: Math.max(0, parseInt(v) || 0) })}
+              min={0}
+            />
+          </div>
+
+          <div className={styles.setsSection}>
+            <div className={styles.setsHeader}>
+              <span className={styles.setsLabel}>Sets</span>
+            </div>
+            {(exercise as StrengthExercise).sets.map((set, si) => (
+              <div key={si} className={styles.setRow}>
+                <span className={styles.setNum}>{si + 1}</span>
+                <NumberInput
+                  label="kg"
+                  value={set.weight || ''}
+                  onChange={(v) => updateSet(si, { weight: parseFloat(v) || 0 })}
+                  decimal
+                  placeholder="0"
+                />
+                <NumberInput
+                  label="Reps"
+                  value={set.reps || ''}
+                  onChange={(v) => updateSet(si, { reps: parseInt(v) || 0 })}
+                  placeholder="0"
+                />
+                <div className={styles.rirField}>
+                  <label className={styles.rirLabel}>RIR</label>
+                  <div className={styles.rirBtns}>
+                    {[0, 1, 2].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        className={`${styles.rirBtn} ${set.rir === n ? styles.rirActive : ''}`}
+                        onClick={() => updateSet(si, { rir: n })}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  className={styles.removeSetBtn}
+                  onClick={() => removeSet(si)}
+                  aria-label="Remove set"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+            <button className={styles.addSetBtn} onClick={addSet}>
+              + Add Set
+            </button>
+          </div>
+        </>
       ) : (
         <div className={styles.fields}>
           <NumberInput

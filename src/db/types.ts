@@ -1,12 +1,16 @@
 // ─── Exercise Types ──────────────────────────────────────────────
 
+export interface StrengthSetTarget {
+  weight: number;
+  reps: number;
+  rir: number; // 0, 1, or 2
+}
+
 export interface StrengthExercise {
   id: string;
   type: 'strength';
   name: string;
-  sets: number;
-  repMin?: number;
-  repMax?: number;
+  sets: StrengthSetTarget[];
   restSeconds: number;
 }
 

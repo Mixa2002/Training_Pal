@@ -13,7 +13,7 @@ function createDefaultExercise(): StrengthExercise {
     type: 'strength',
     name: '',
     sets: [{ weight: 0, reps: 0, rir: 2 }],
-    restSeconds: 90,
+    restSeconds: 180,
   };
 }
 

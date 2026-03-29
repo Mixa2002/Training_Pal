@@ -15,12 +15,15 @@ export function playBeep() {
     audioCtx.resume();
   }
 
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.frequency.value = 880;
-  gain.gain.value = 0.3;
-  osc.start();
-  osc.stop(audioCtx.currentTime + 0.3);
+  const now = audioCtx.currentTime;
+  for (let i = 0; i < 3; i++) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = 880;
+    gain.gain.value = 0.5;
+    osc.start(now + i * 0.35);
+    osc.stop(now + i * 0.35 + 0.2);
+  }
 }

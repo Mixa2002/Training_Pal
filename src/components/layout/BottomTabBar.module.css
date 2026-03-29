@@ -1,16 +1,17 @@
 .tabBar {
   position: fixed;
-  bottom: -50px;
-  left: 0;
-  right: 0;
-  height: calc(var(--tab-bar-height) + var(--safe-bottom) + 50px);
-  padding-bottom: calc(var(--safe-bottom) + 50px);
+  bottom: calc(12px + var(--safe-bottom));
+  left: 16px;
+  right: 16px;
+  height: var(--tab-bar-height);
   background: var(--bg-secondary);
-  border-top: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: space-around;
   z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 0 0.5px rgba(255, 255, 255, 0.06) inset;
 }
 
 .tab {

@@ -38,7 +38,7 @@ export default function ExerciseFormRow({
         incline: 0,
         speed: 0,
         durationMinutes: 30,
-        restSeconds: exercise.restSeconds,
+        restSeconds: 0,
       });
     } else {
       onChange({
@@ -203,12 +203,6 @@ export default function ExerciseFormRow({
             label="Duration (min)"
             value={exercise.durationMinutes}
             onChange={(v) => update({ durationMinutes: parseInt(v) || 0 })}
-          />
-          <NumberInput
-            label="Rest (s)"
-            value={exercise.restSeconds}
-            onChange={(v) => update({ restSeconds: Math.max(0, parseInt(v) || 0) })}
-            min={0}
           />
         </div>
       )}

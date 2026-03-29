@@ -9,7 +9,15 @@
       "Bash(cd:*)",
       "Bash(node -e \":*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm info:*)",
+      "Bash(node -e \"const sharp = require\\(''sharp''\\)\")",
+      "Bash(npx sharp-cli:*)",
+      "Bash(where magick:*)",
+      "Bash(where convert:*)",
+      "Bash(where ffmpeg:*)",
+      "Bash(npx vite:*)"
     ]
   }
 }

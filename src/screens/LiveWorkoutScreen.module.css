@@ -1,5 +1,6 @@
 .page {
-  min-height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   padding: 16px;
   padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
@@ -8,6 +9,15 @@
 
 .header {
   margin-bottom: 20px;
+}
+
+.stopwatch {
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
 }
 
 .headerRow {

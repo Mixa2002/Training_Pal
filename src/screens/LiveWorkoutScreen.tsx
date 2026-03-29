@@ -7,6 +7,7 @@ import { todayString } from '../utils/dates';
 import { initAudio, playBeep } from '../utils/audio';
 import { getLastSessionExercises } from '../utils/predictions';
 import { useRestTimer } from '../hooks/useRestTimer';
+import { useStopwatch, formatStopwatch } from '../hooks/useStopwatch';
 import { useSettings } from '../hooks/useSettings';
 import type {
   Exercise,
@@ -64,7 +65,7 @@ export default function LiveWorkoutScreen() {
 
   const handleTimerComplete = useCallback(() => {
     if (settings.vibrationEnabled && navigator.vibrate) {
-      navigator.vibrate([200, 100, 200]);
+      navigator.vibrate([300, 150, 300, 150, 300]);
     }
     if (settings.soundEnabled) {
       playBeep();
@@ -72,6 +73,7 @@ export default function LiveWorkoutScreen() {
   }, [settings.soundEnabled, settings.vibrationEnabled]);
 
   const timer = useRestTimer(handleTimerComplete);
+  const elapsedSeconds = useStopwatch(startedAt);
 
   // Prefill logic: use last session data if available, otherwise fall back to template targets
   function prefillSet(ex: Exercise, setIndex: number, preds: Map<string, SessionExercise>) {
@@ -176,8 +178,8 @@ export default function LiveWorkoutScreen() {
         timer.start(currentEx.restSeconds);
       }
     } else {
-      // All sets done — start rest timer before next exercise
-      if (currentEx.restSeconds > 0 && !isLastExercise) {
+      // All sets done — start rest timer before next exercise (strength only)
+      if (currentEx.type === 'strength' && currentEx.restSeconds > 0 && !isLastExercise) {
         timer.start(currentEx.restSeconds);
       }
     }
@@ -256,6 +258,7 @@ export default function LiveWorkoutScreen() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
+        <div className={styles.stopwatch}>{formatStopwatch(elapsedSeconds)}</div>
         <ExerciseProgress current={currentExIndex} total={exercises.length} />
         <div className={styles.headerRow}>
           <h1 className={styles.exName}>{currentEx.name}</h1>

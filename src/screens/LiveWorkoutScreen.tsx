@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { generateId } from '../utils/uuid';
@@ -9,6 +9,13 @@ import { getLastSessionExercises } from '../utils/predictions';
 import { useRestTimer } from '../hooks/useRestTimer';
 import { useStopwatch, formatStopwatch } from '../hooks/useStopwatch';
 import { useSettings } from '../hooks/useSettings';
+import {
+  clearWorkoutDraft,
+  getWorkoutDraftDate,
+  loadWorkoutDraft,
+  saveWorkoutDraft,
+  type WorkoutDraftInput,
+} from '../utils/workoutDraft';
 import type {
   Exercise,
   StrengthExercise,
@@ -26,16 +33,9 @@ import Button from '../components/common/Button';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import styles from './LiveWorkoutScreen.module.css';
 
-interface SetInput {
-  weight: string;
-  reps: string;
-  rir: number | null;
-  incline: string;
-  speed: string;
-  durationMinutes: string;
-}
+type SetInput = WorkoutDraftInput;
 
-const emptyInput: SetInput = {
+const emptyInput: WorkoutDraftInput = {
   weight: '',
   reps: '',
   rir: null,
@@ -46,6 +46,10 @@ const emptyInput: SetInput = {
 
 export default function LiveWorkoutScreen() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const manualDate = searchParams.get('date');
+  const manualTemplateId = searchParams.get('templateId');
+  const isManualLog = Boolean(manualDate && manualTemplateId);
   const settings = useSettings();
   const cycle = useLiveQuery(() => db.programCycle.get('active'));
 
@@ -57,7 +61,7 @@ export default function LiveWorkoutScreen() {
   const [completedSets, setCompletedSets] = useState<Map<string, SessionSet[]>>(new Map());
   const [currentSetNum, setCurrentSetNum] = useState(1);
   const [input, setInput] = useState<SetInput>({ ...emptyInput });
-  const [startedAt] = useState(Date.now());
+  const [startedAt, setStartedAt] = useState(Date.now());
   const [showAbandon, setShowAbandon] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [weightStep, setWeightStep] = useState<1 | 1.25>(1);
@@ -106,15 +110,62 @@ export default function LiveWorkoutScreen() {
   // Load template and predictions on mount
   useEffect(() => {
     async function load() {
-      const c = await db.programCycle.get('active');
-      if (!c || c.sequence.length === 0) {
-        navigate('/');
+      const draft = loadWorkoutDraft();
+      let draftMatches = false;
+
+      if (draft) {
+        if (isManualLog) {
+          draftMatches =
+            draft.mode === 'manual' &&
+            draft.manualDate === (manualDate ?? null) &&
+            draft.manualTemplateId === (manualTemplateId ?? null);
+        } else {
+          const c = await db.programCycle.get('active');
+          const expectedTemplateId = c?.sequence[c.currentIndex];
+          draftMatches =
+            draft.mode === 'today' &&
+            getWorkoutDraftDate(draft) === todayString() &&
+            draft.templateId === expectedTemplateId;
+
+          if (!draftMatches && draft.mode === 'today') {
+            clearWorkoutDraft();
+          }
+        }
+      }
+
+      if (draftMatches) {
+        const activeDraft = draft!;
+        setTemplateId(activeDraft.templateId);
+        setTemplateName(activeDraft.templateName);
+        setExercises(activeDraft.exercises);
+        setPredictions(new Map(activeDraft.predictions));
+        setCompletedSets(new Map(activeDraft.completedSets));
+        setCurrentExIndex(activeDraft.currentExIndex);
+        setCurrentSetNum(activeDraft.currentSetNum);
+        setInput(activeDraft.input);
+        setStartedAt(activeDraft.startedAt);
+        setWeightStep(activeDraft.weightStep);
+        initAudio();
+        setLoaded(true);
         return;
       }
-      const tId = c.sequence[c.currentIndex];
+
+      let tId: string;
+
+      if (isManualLog) {
+        tId = manualTemplateId!;
+      } else {
+        const c = await db.programCycle.get('active');
+        if (!c || c.sequence.length === 0) {
+          navigate('/');
+          return;
+        }
+        tId = c.sequence[c.currentIndex];
+      }
+
       const template = await db.templates.get(tId);
       if (!template || template.exercises.length === 0) {
-        navigate('/');
+        navigate(manualDate ? '/history' : '/');
         return;
       }
 
@@ -134,6 +185,44 @@ export default function LiveWorkoutScreen() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!loaded || !templateId) return;
+
+    saveWorkoutDraft({
+      version: 1,
+      mode: isManualLog ? 'manual' : 'today',
+      sessionDate: isManualLog ? manualDate! : todayString(),
+      manualDate: manualDate ?? null,
+      manualTemplateId: manualTemplateId ?? null,
+      templateId,
+      templateName,
+      exercises,
+      predictions: Array.from(predictions.entries()),
+      completedSets: Array.from(completedSets.entries()),
+      currentExIndex,
+      currentSetNum,
+      input,
+      startedAt,
+      weightStep,
+      savedAt: Date.now(),
+    });
+  }, [
+    loaded,
+    templateId,
+    templateName,
+    exercises,
+    predictions,
+    completedSets,
+    currentExIndex,
+    currentSetNum,
+    input,
+    startedAt,
+    weightStep,
+    isManualLog,
+    manualDate,
+    manualTemplateId,
+  ]);
 
   const currentEx = exercises[currentExIndex];
   const exCompletedSets = completedSets.get(currentEx?.id ?? '') ?? [];
@@ -201,6 +290,8 @@ export default function LiveWorkoutScreen() {
   async function finishWorkout() {
     timer.cancel();
     const now = Date.now();
+    const sessionDate = isManualLog ? manualDate! : todayString();
+
     const exerciseData: SessionExercise[] = exercises.map((ex) => ({
       exerciseId: ex.id,
       exerciseName: ex.name,
@@ -212,28 +303,61 @@ export default function LiveWorkoutScreen() {
       id: generateId(),
       templateId,
       templateName,
-      date: todayString(),
+      date: sessionDate,
       status: 'completed',
-      startedAt,
-      finishedAt: now,
-      durationSeconds: Math.round((now - startedAt) / 1000),
+      startedAt: isManualLog ? null : startedAt,
+      finishedAt: isManualLog ? null : now,
+      durationSeconds: isManualLog ? null : Math.round((now - startedAt) / 1000),
       exerciseData,
     });
 
-    if (cycle) {
-      const nextIndex = (cycle.currentIndex + 1) % cycle.sequence.length;
-      await db.programCycle.update('active', {
-        currentIndex: nextIndex,
-        lastCompletedDate: todayString(),
+    if (!isManualLog) {
+      // Update template targets with what was actually performed.
+      const updatedExercises = exercises.map((ex) => {
+        const done = completedSets.get(ex.id);
+        if (!done || done.length === 0) return ex;
+
+        if (ex.type === 'strength') {
+          return {
+            ...ex,
+            sets: done.map((s) => ({
+              weight: (s as StrengthSet).weight,
+              reps: (s as StrengthSet).reps,
+              rir: (s as StrengthSet).rir,
+            })),
+          };
+        }
+        const c = done[0] as CardioSet;
+        return {
+          ...ex,
+          incline: c.incline,
+          speed: c.speed,
+          durationMinutes: c.durationMinutes,
+        };
+      });
+
+      await db.templates.update(templateId, {
+        exercises: updatedExercises,
+        updatedAt: Date.now(),
       });
     }
 
-    navigate('/');
+    if (!isManualLog && cycle) {
+      const nextIndex = (cycle.currentIndex + 1) % cycle.sequence.length;
+      await db.programCycle.update('active', {
+        currentIndex: nextIndex,
+        lastCompletedDate: sessionDate,
+      });
+    }
+
+    clearWorkoutDraft();
+    navigate(isManualLog ? '/history' : '/');
   }
 
   function handleAbandon() {
     timer.cancel();
-    navigate('/');
+    clearWorkoutDraft();
+    navigate(isManualLog ? '/history' : '/');
   }
 
   if (!loaded || !currentEx) return null;

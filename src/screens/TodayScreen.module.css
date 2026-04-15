@@ -18,6 +18,30 @@
   margin-bottom: 16px;
 }
 
+.resumeBanner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.resumeTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.resumeMeta {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
 .exercisePreview {
   display: flex;
   flex-direction: column;
@@ -81,6 +105,12 @@
   gap: 12px;
 }
 
+.skipOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .doneCard {
   display: flex;
   flex-direction: column;
@@ -96,6 +126,12 @@
 .doneTitle {
   font-size: 22px;
   font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.doneMeta {
+  font-size: 14px;
+  color: var(--text-secondary);
   margin-bottom: 8px;
 }
 

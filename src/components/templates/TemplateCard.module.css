@@ -10,6 +10,12 @@
   transition: background 0.15s;
 }
 
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 12px;
+}
+
 .card:active {
   background: var(--bg-tertiary);
 }
@@ -33,7 +39,7 @@
   color: var(--text-secondary);
 }
 
-.deleteBtn {
+.actionBtn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,7 +50,10 @@
   background: transparent;
   color: var(--text-muted);
   flex-shrink: 0;
-  margin-left: 12px;
+}
+
+.actionBtn:active {
+  background: var(--bg-tertiary);
 }
 
 .deleteBtn:active {

@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { formatDate, formatDuration } from '../utils/dates';
 import type { StrengthSet, CardioSet } from '../db/types';
+import Button from '../components/common/Button';
 import styles from './SessionDetailScreen.module.css';
 
 export default function SessionDetailScreen() {
@@ -47,6 +48,12 @@ export default function SessionDetailScreen() {
             {session.status}
           </span>
         </div>
+      </div>
+
+      <div className={styles.actions}>
+        <Button variant="secondary" onClick={() => navigate(`/history/${session.id}/edit`)}>
+          Edit Session
+        </Button>
       </div>
 
       <div className={styles.exercises}>

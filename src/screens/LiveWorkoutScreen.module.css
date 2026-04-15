@@ -132,7 +132,7 @@
 }
 
 .incBtn:active {
-  background: var(--accent-green);
+  background: var(--accent);
   color: #000;
 }
 
@@ -149,8 +149,8 @@
 }
 
 .stepActive1 {
-  border-color: var(--accent-green);
-  color: var(--accent-green);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .stepActive125 {

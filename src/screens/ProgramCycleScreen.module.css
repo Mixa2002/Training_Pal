@@ -55,6 +55,67 @@
   color: var(--text-secondary);
 }
 
+.resetArea {
+  position: relative;
+}
+
+.resetDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  min-width: 200px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.resetOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  min-height: 40px;
+}
+
+.resetOption:active {
+  background: var(--border);
+}
+
+.resetOptionCurrent {
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.resetOptionDay {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 44px;
+  flex-shrink: 0;
+}
+
+.resetOptionName {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .sequenceList {
   display: flex;
   flex-direction: column;

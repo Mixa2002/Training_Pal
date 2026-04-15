@@ -13,7 +13,10 @@ export function useRestTimer(onComplete: () => void): UseRestTimerReturn {
   const [isActive, setIsActive] = useState(false);
   const rafRef = useRef(0);
   const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   const start = useCallback((durationSeconds: number) => {
     const end = Date.now() + durationSeconds * 1000;

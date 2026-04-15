@@ -1,5 +1,23 @@
 export function toDateString(date: Date = new Date()): string {
-  return date.toISOString().slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function fromDateString(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+export function addDays(dateStr: string, days: number): string {
+  const date = fromDateString(dateStr);
+  date.setDate(date.getDate() + days);
+  return toDateString(date);
+}
+
+export function compareDateStrings(a: string, b: string): number {
+  return a.localeCompare(b);
 }
 
 export function todayString(): string {

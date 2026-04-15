@@ -36,10 +36,19 @@ export default function ProgramCycleScreen() {
   }
 
   async function removeFromSequence(index: number) {
+    if (!cycle) return;
+
     const newSeq = sequence.filter((_, i) => i !== index);
-    const newIndex = cycle!.currentIndex >= newSeq.length
-      ? Math.max(0, newSeq.length - 1)
-      : cycle!.currentIndex;
+    let newIndex = cycle.currentIndex;
+
+    if (newSeq.length === 0) {
+      newIndex = 0;
+    } else if (index < cycle.currentIndex) {
+      newIndex = cycle.currentIndex - 1;
+    } else if (index === cycle.currentIndex) {
+      newIndex = Math.min(index, newSeq.length - 1);
+    }
+
     await db.programCycle.update('active', {
       sequence: newSeq,
       currentIndex: newIndex,
@@ -47,19 +56,37 @@ export default function ProgramCycleScreen() {
   }
 
   async function moveInSequence(from: number, to: number) {
+    if (!cycle) return;
+
     const newSeq = [...sequence];
     const [item] = newSeq.splice(from, 1);
     newSeq.splice(to, 0, item);
-    await db.programCycle.update('active', { sequence: newSeq });
+
+    let newIndex = cycle.currentIndex;
+    if (from === cycle.currentIndex) {
+      newIndex = to;
+    } else if (from < cycle.currentIndex && to >= cycle.currentIndex) {
+      newIndex = cycle.currentIndex - 1;
+    } else if (from > cycle.currentIndex && to <= cycle.currentIndex) {
+      newIndex = cycle.currentIndex + 1;
+    }
+
+    await db.programCycle.update('active', {
+      sequence: newSeq,
+      currentIndex: newIndex,
+    });
   }
 
-  async function resetCycle() {
+  const [showResetPicker, setShowResetPicker] = useState(false);
+
+  async function resetCycleTo(index: number) {
     if (cycle) {
       await db.programCycle.update('active', {
-        currentIndex: 0,
+        currentIndex: index,
         startDate: todayString(),
         lastCompletedDate: null,
       });
+      setShowResetPicker(false);
     }
   }
 
@@ -82,9 +109,30 @@ export default function ProgramCycleScreen() {
           <span className={styles.statusText}>
             Day {cycle.currentIndex + 1} of {sequence.length}
           </span>
-          <button className={styles.resetBtn} onClick={resetCycle}>
-            Reset Position
-          </button>
+          <div className={styles.resetArea}>
+            <button className={styles.resetBtn} onClick={() => setShowResetPicker(!showResetPicker)}>
+              {showResetPicker ? 'Cancel' : 'Reset Position'}
+            </button>
+            {showResetPicker && (
+              <div className={styles.resetDropdown}>
+                {sequence.map((templateId, i) => {
+                  const tmpl = templateMap.get(templateId);
+                  return (
+                    <button
+                      key={`reset-${i}`}
+                      className={`${styles.resetOption} ${cycle.currentIndex === i ? styles.resetOptionCurrent : ''}`}
+                      onClick={() => resetCycleTo(i)}
+                    >
+                      <span className={styles.resetOptionDay}>Day {i + 1}</span>
+                      <span className={styles.resetOptionName}>
+                        {tmpl?.name ?? 'Deleted Template'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

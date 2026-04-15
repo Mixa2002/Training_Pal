@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../db/database';
 import { generateId } from '../utils/uuid';
+import { cloneExercise, cloneExercises, copyTemplateName } from '../utils/templates';
 import type { Exercise, StrengthExercise, Template } from '../db/types';
 import ExerciseFormRow from '../components/templates/ExerciseFormRow';
 import Button from '../components/common/Button';
@@ -58,18 +59,26 @@ export default function TemplateEditorScreen() {
     });
   }
 
-  async function handleSave() {
+  function duplicateExercise(index: number) {
+    setExercises((prev) => {
+      const next = [...prev];
+      next.splice(index + 1, 0, cloneExercise(prev[index]));
+      return next;
+    });
+  }
+
+  async function handleSave(saveAsCopy = false) {
     const trimmedName = name.trim();
     if (!trimmedName) return;
     const validExercises = exercises.filter((e) => e.name.trim() !== '');
     if (validExercises.length === 0) return;
 
     const now = Date.now();
-    if (isNew) {
+    if (isNew || saveAsCopy) {
       const template: Template = {
         id: generateId(),
-        name: trimmedName,
-        exercises: validExercises,
+        name: saveAsCopy ? copyTemplateName(trimmedName) : trimmedName,
+        exercises: saveAsCopy ? cloneExercises(validExercises) : validExercises,
         createdAt: now,
         updatedAt: now,
       };
@@ -119,6 +128,7 @@ export default function TemplateEditorScreen() {
             index={i}
             total={exercises.length}
             onChange={(updated) => updateExercise(i, updated)}
+            onDuplicate={() => duplicateExercise(i)}
             onRemove={() => removeExercise(i)}
             onMoveUp={() => moveExercise(i, i - 1)}
             onMoveDown={() => moveExercise(i, i + 1)}
@@ -134,7 +144,12 @@ export default function TemplateEditorScreen() {
       </button>
 
       <div className={styles.saveArea}>
-        <Button fullWidth onClick={handleSave} disabled={!isValid}>
+        {!isNew && (
+          <Button variant="secondary" fullWidth onClick={() => handleSave(true)}>
+            Save As Copy
+          </Button>
+        )}
+        <Button fullWidth onClick={() => handleSave()} disabled={!isValid}>
           {isNew ? 'Create Template' : 'Save Changes'}
         </Button>
       </div>
